@@ -1,0 +1,9 @@
+command:
+  - python
+  - main.py
+
+resources:
+  - name: aircraft-maintenance-lakebase
+    database_instance:
+      name: aircraft-maintenance-lakebase
+      permission: USER
