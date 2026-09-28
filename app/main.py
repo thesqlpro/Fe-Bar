@@ -1,7 +1,8 @@
-"""Aircraft Predictive Maintenance Intelligence App.
+"""Parker Hannifin Component Predictive Maintenance Intelligence App.
 
 Flask app that embeds the AI/BI dashboard via iframe and provides
-a custom Genie chat interface powered by the Databricks SDK.
+a custom Genie chat interface for Parker aerospace component maintenance,
+powered by the Databricks SDK.
 """
 import os, json, traceback
 from flask import Flask, render_template_string, request, jsonify
@@ -133,7 +134,7 @@ PAGE_HTML = r"""
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Aircraft PdM Intelligence</title>
+<title>Parker Hannifin Component Intelligence</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -211,20 +212,21 @@ nav button:hover:not(.active){background:rgba(0,180,216,.1)}
 <aside class="sidebar">
   <div class="brand">
     <div class="icon">&#9992;</div>
-    <h1>Aircraft PdM</h1>
-    <span>INTELLIGENCE PLATFORM</span>
+    <h1>Parker Hannifin</h1>
+    <span>COMPONENT INTELLIGENCE</span>
   </div>
   <nav>
     <button class="active" onclick="switchView('dashboard',this)">&#128202; Dashboard</button>
     <button onclick="switchView('genie',this)">&#129302; Genie AI</button>
+    <button onclick="window.open('https://aircraft-maintenance-app-7474652206075893.aws.databricksapps.com','_blank')">&#128279; App URL</button>
   </nav>
   <div class="spacer"></div>
   <div class="status">
     <h4>SYSTEM STATUS</h4>
     <div class="status-row"><span class="dot green"></span>Lakebase Online</div>
-    <div class="status-row"><span class="dot green"></span>5 Synced Tables</div>
-    <div class="status-row"><span class="dot green"></span>ML Models Active</div>
-    <div class="status-row"><span class="dot accent"></span>310 Aircraft Scored</div>
+    <div class="status-row"><span class="dot green"></span>11 UC Tables</div>
+    <div class="status-row"><span class="dot green"></span>ML Failure Model Active</div>
+    <div class="status-row"><span class="dot accent"></span>1,640 Components Scored</div>
   </div>
 </aside>
 
@@ -232,8 +234,8 @@ nav button:hover:not(.active){background:rgba(0,180,216,.1)}
 <main class="main">
   <div class="header" id="hdr">
     <div>
-      <h2 id="hdr-title">Fleet Operations Dashboard</h2>
-      <p id="hdr-sub">Real-time fleet analytics powered by Lakebase</p>
+      <h2 id="hdr-title">Component Maintenance Dashboard</h2>
+      <p id="hdr-sub">Parker Hannifin aerospace component analytics powered by Databricks</p>
     </div>
     <span class="badge">Powered by Databricks</span>
   </div>
@@ -249,19 +251,19 @@ nav button:hover:not(.active){background:rgba(0,180,216,.1)}
       <div class="genie-chat">
         <div class="chat-messages" id="chat-box">
           <div class="msg bot">
-            <strong>Genie AI</strong> &mdash; Aircraft Maintenance Intelligence<br><br>
-            Ask me anything about your fleet, anomalies, maintenance predictions, or airline operations.
+            <strong>Genie AI</strong> &mdash; Parker Component Maintenance Intelligence<br><br>
+            Ask me anything about Parker components, maintenance compliance, failure predictions, warranty exposure, or airline customer operations.
           </div>
           <div class="starters" id="starters">
-            <button onclick="askStarter(this)">Which aircraft are CRITICAL risk?</button>
-            <button onclick="askStarter(this)">Top anomaly types by frequency</button>
-            <button onclick="askStarter(this)">Airlines with highest anomaly rate</button>
-            <button onclick="askStarter(this)">Fleet health summary</button>
-            <button onclick="askStarter(this)">Overdue maintenance aircraft</button>
+            <button onclick="askStarter(this)">Which components need EMERGENCY_GROUND?</button>
+            <button onclick="askStarter(this)">Top maintenance anomaly types by frequency</button>
+            <button onclick="askStarter(this)">Airlines with highest warranty exposure</button>
+            <button onclick="askStarter(this)">Component health summary by type</button>
+            <button onclick="askStarter(this)">FLIGHT_CRITICAL components with active anomalies</button>
           </div>
         </div>
         <div class="chat-input">
-          <input id="q" placeholder="Ask about aircraft maintenance data..." onkeydown="if(event.key==='Enter')sendMsg()">
+          <input id="q" placeholder="Ask about Parker component maintenance data..." onkeydown="if(event.key==='Enter')sendMsg()">
           <button id="send-btn" onclick="sendMsg()">Send</button>
         </div>
       </div>
@@ -278,11 +280,11 @@ function switchView(name, btn) {
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   if (name==='dashboard') {
-    document.getElementById('hdr-title').textContent='Fleet Operations Dashboard';
-    document.getElementById('hdr-sub').textContent='Real-time fleet analytics powered by Lakebase';
+    document.getElementById('hdr-title').textContent='Component Maintenance Dashboard';
+    document.getElementById('hdr-sub').textContent='Parker Hannifin aerospace component analytics powered by Databricks';
   } else {
     document.getElementById('hdr-title').textContent='Genie AI Assistant';
-    document.getElementById('hdr-sub').textContent='Ask natural-language questions about aircraft maintenance data';
+    document.getElementById('hdr-sub').textContent='Ask natural-language questions about Parker component maintenance data';
   }
 }
 
