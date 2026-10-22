@@ -17,7 +17,7 @@ This document captures how AI tools were used throughout the build process, whic
 |----------|----------------|--------|
 | Medallion layer design (Bronze→Silver→Gold) | AI suggested table granularity — one row per component vs. per aircraft | Enabled component-level failure prediction (1,640 predictions vs. 310) |
 | 6 anomaly type taxonomy | AI proposed anomaly categories based on aerospace MRO domain research | Realistic anomaly distribution with correlated severity/delay risk |
-| ML model selection (GBT + Isolation Forest) | AI recommended ensemble approach for both supervised + unsupervised detection | Binary AUC 0.999, Isolation Forest catches novel patterns |
+| ML model selection (GBT + Isolation Forest) | AI recommended an ensemble for supervised + unsupervised detection | First version scored AUC 0.999. Review found this was leakage, so it was replaced by a point-in-time forecast (AUC 0.60, 2.2x top-decile lift). See "Round 2" below |
 | Metric view YAML design | AI authored YAML metric definitions with proper synonyms and formatting | 3 production-ready semantic views consumed by Genie Room |
 | Genie Room domain instructions | AI wrote comprehensive domain context with table routing rules | Natural language queries correctly routed to appropriate gold tables |
 
@@ -45,7 +45,7 @@ AI generated Lakeflow Spark Declarative Pipeline notebooks with:
 ### 3. ML Feature Engineering (MEDIUM IMPACT)
 AI identified key features for part failure prediction:
 - Removed leaking features (failure_risk_category derived from target)
-- Applied SMOTE oversampling for imbalanced anomaly classes
+- Applied balanced sample weights for imbalanced anomaly classes
 - Suggested Isolation Forest as complementary unsupervised detector
 - Generated recommended_action mapping based on failure probability thresholds
 
@@ -86,6 +86,21 @@ AI designed the Flask app architecture:
 | App Development | Databricks Assistant | Flask app scaffolding, Genie integration, permission setup |
 | Documentation | Databricks Assistant + GitHub Copilot | README, execution evidence, this document |
 
+## Round 2: Responding to Review Feedback
+
+Workflow: paste the reviewer's feedback into Databricks Assistant (Genie Code), have it audit the repo against every gap, agree a plan, then execute and verify each item against live data before committing.
+
+| Gap raised | What AI did | Where human judgment mattered |
+|---|---|---|
+| Story didn't match the customer (airline vs component OEM) | Audited every file for airline-only framing. Rewrote README, deck and evidence around Parker's position (Tier-1 OEM carrying warranty and AOG cost) | Chose the economic buyer (VP Aftermarket & Customer Support) and funding sponsor (VP Finance) by role, not by name |
+| Unity Catalog not visible in code | Wrote `governance/uc_access_controls.sql`: entitlement map, row filter, column mask, grants, lineage query. Ran and verified it | The tag policy rejected free-form tag keys. AI switched to table properties. A failed insert briefly left the row filter blocking every row, caught and fixed within the session |
+| No quantified before/after | Built a leakage-free next-quarter forecast and back-tested it on a held-out quarter. Turned it into KPI deltas with stated assumptions | **The headline AUC 0.999 was challenged, not celebrated.** The label was a threshold on one of the model's inputs. Honest result: AUC 0.60, 24% of events caught from a 10% visit list, -20% quarterly exposure |
+| One message for two audiences | Generated a deck with separate financial (VP Finance) and operational (Product Support Engineering) value slides, all numbers queried live | Set the 60% intervention-success and $250K run-cost assumptions and put them on the slides |
+| Data realism not verifiable | Added a realism-profile cell to the simulator | Reported the weakness (overdue service does not raise anomaly risk) instead of hiding it |
+| Name clash between two datasets | Traced every reference and lineage edge before renaming `bronze_aircraft_registry_old_managed` -> `bronze_parker_aircraft_registry`, then re-verified all downstream tables | Approved the rename only after the dependency check |
+
+Biggest force multiplier: AI collapsed audit, fix and verify into one session. The biggest risk it caught was a flattering metric that would not have survived a customer's data science team.
+
 ## Key Lessons Learned
 
 1. **Start with the business story**: AI works best when given clear domain context. The Parker Hannifin reframe from "airline fleet ops" to "component OEM maintenance" required human judgment but AI accelerated the rewrite.
@@ -97,3 +112,5 @@ AI designed the Flask app architecture:
 4. **Metric views are powerful**: AI-authored YAML metric views create a semantic layer that Genie Room uses for natural language query routing. This is the bridge between data engineering and business users.
 
 5. **Tag policies matter**: Workspace tag policies constrained which tags could be applied. AI helped navigate the allowed values (quality=bronze/silver/gold) vs. custom keys.
+
+6. **Distrust near-perfect metrics**: an AUC of 0.999 on a synthetic, rule-derived label is a leakage alarm. Build labels from a future window and features from the past.
