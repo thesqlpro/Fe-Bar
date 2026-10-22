@@ -51,6 +51,16 @@ Instance `aircraft-maintenance-lakebase` (CU_1), 5 synced tables (SNAPSHOT mode)
 
 ### 9. Databricks App (`app/`)
 Flask app: embedded AI/BI dashboard + custom Genie chat with Chart.js visualizations (Bar/Donut/Line), query result polling, markdown-formatted responses. Aviation cockpit dark theme.
+- **Maintenance Manuals tab**: engineers search the manual library by symptom, part name or part number (Vector Search, hybrid keyword + semantic), filter by aircraft type and system, and see the part, part number, limits, torque values and step-by-step corrective action. An "Ask Genie" button hands off to the Genie tab to find which aircraft currently have that fault.
+- API routes: `/api/genie`, `/api/manuals/search`, `/api/manuals/facets`
+
+### 10. Maintenance Manual Search (`notebooks/Maintenance_Manuals_Ingestion.ipynb`)
+- 10 synthetic maintenance manuals (PDF), one per fleet aircraft type, each with a troubleshooting task for all 10 fleet fault codes (synthetic demo content, not OEM data)
+- UC volume `default.maintenance_manuals` -> `ai_parse_document` (v2) -> `maintenance_manual_parsed` -> one chunk per task with part number, ATA chapter, system and fault code -> `maintenance_manual_chunks` (100 rows)
+- Vector Search endpoint `aircraft-manuals-vs` + delta-sync index `maintenance_manual_index` (`databricks-gte-large-en`, triggered sync)
+
+### 11. Fleet Data Skew Reprocessing (`notebooks/Fleet_Data_Skew_Reprocessing.ipynb`)
+Backs up the raw sources, regenerates 1,380 flights with a realistic carrier story (SkyWest Global and Atlas Pacific worst and worsening Jul-Oct 2026, best-in-class carriers at ~3-4%), runs a full pipeline refresh, rebuilds `gold_anomaly_events_extended` and `ml_maintenance_predictions`, and re-syncs the Lakebase tables.
 
 ## Execution Evidence
 See [`execution_evidence.md`](execution_evidence.md) for full run details, row counts, and model metrics.
@@ -64,4 +74,6 @@ See [`execution_evidence.md`](execution_evidence.md) for full run details, row c
 2. Create and run the Lakeflow pipeline using `pipeline/` notebooks
 3. Run `notebooks/Aircraft_Anomaly_Detection_Model.ipynb` for ML training
 4. Run `notebooks/Gold_Layer_Metric_Views.ipynb` to create metric views
-5. Deploy `app/` as a Databricks App
+5. Run `notebooks/Maintenance_Manuals_Ingestion.ipynb` to build the manual library and Vector Search index
+6. (Optional) Run `notebooks/Fleet_Data_Skew_Reprocessing.ipynb` to apply the demo data story
+7. Deploy `app/` as a Databricks App and grant its service principal `SELECT` on `maintenance_manual_index`
