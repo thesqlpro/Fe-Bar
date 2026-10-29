@@ -92,10 +92,16 @@ Six UC metric views. Operator telemetry: `fleet_operations_metrics`, `aircraft_h
 Instance `aircraft-maintenance-lakebase` (CU_1), 5 synced tables (SNAPSHOT mode) for low-latency dashboard queries
 
 ### 7. Genie Agent
-"Aircraft Maintenance Intelligence" — 8 tables, domain instructions, 5 starter questions, knowledge snippets
+"Aircraft Maintenance Intelligence": 13 tables.
+- Parker installed base: `ml_component_failure_forecast`, `gold_component_health`, `gold_maintenance_compliance`, `gold_maintenance_anomalies`, `gold_customer_operations`
+- Operator flight telemetry: `gold_flight_summary`, `gold_aircraft_health`, `gold_anomaly_events`, `gold_airline_operations`, `ml_maintenance_predictions`, plus 3 metric views
+- Instructions say which table answers which kind of question (component forecast vs aircraft-level risk) and explain the airline row filter and warranty-$ mask
+- Reusable filters (top risk decile, proactive visit list), an expected-exposure measure, joins and example SQL
+- Starter questions include "Which Atlas Pacific hydraulic actuators are in the top risk decile next quarter?" and "Which components need a proactive field-service visit next quarter?"
+- Benchmarks: both Parker benchmark questions pass (18 actuators; 164 visit-list components)
 
 ### 8. AI/BI Dashboard
-4 pages (Fleet Ops, Aircraft Health, Anomaly Analysis, Airline Ops), 5 datasets on Lakebase synced tables, published with embedded credentials
+Operator telemetry pages (Fleet Operations, Aircraft Health & Maintenance, Anomaly Analysis, Flight Phase Analysis, Airline Operations), mostly on Lakebase synced tables, published with embedded credentials
 
 ### 9. Databricks App (`app/`)
 Flask app: embedded AI/BI dashboard + custom Genie chat with Chart.js visualizations (Bar/Donut/Line), query result polling, markdown-formatted responses. Aviation cockpit dark theme.
