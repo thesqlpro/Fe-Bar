@@ -331,7 +331,7 @@ nav button:hover:not(.active){background:rgba(0,180,216,.1)}
             Ask me anything about Parker components, maintenance compliance, failure predictions, warranty exposure, or airline customer operations.
           </div>
           <div class="starters" id="starters">
-            <button onclick="askStarter(this)">Which components need EMERGENCY_GROUND?</button>
+            <button onclick="askStarter(this)">Which components need a proactive field-service visit next quarter?</button>
             <button onclick="askStarter(this)">Top maintenance anomaly types by frequency</button>
             <button onclick="askStarter(this)">Airlines with highest warranty exposure</button>
             <button onclick="askStarter(this)">Component health summary by type</button>
