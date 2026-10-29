@@ -101,7 +101,14 @@ Instance `aircraft-maintenance-lakebase` (CU_1), 5 synced tables (SNAPSHOT mode)
 - Benchmarks: both Parker benchmark questions pass (18 actuators; 164 visit-list components)
 
 ### 8. AI/BI Dashboard
-Operator telemetry pages (Fleet Operations, Aircraft Health & Maintenance, Anomaly Analysis, Flight Phase Analysis, Airline Operations), mostly on Lakebase synced tables, published with embedded credentials
+First page **Parker Installed Base**, built on four local metric views over the Parker gold tables:
+- counters: 1,640 components monitored, 164 components on the next-quarter proactive-visit list, and expected warranty exposure for the top risk decile
+- expected warranty exposure by airline for the top risk decile (Atlas Pacific highest at about $558K)
+- top-decile components by component type
+- operator service compliance by airline and component type (compliance rate, average overdue days, SLA breach risk)
+- service anomalies by type
+
+Followed by the operator telemetry pages (Fleet Operations, Flight Phase Analysis, Aircraft Health & Maintenance, Anomaly Analysis, Airline Operations), mostly on Lakebase synced tables. Published with embedded credentials on 2026-10-29.
 
 ### 9. Databricks App (`app/`)
 Flask app: embedded AI/BI dashboard + custom Genie chat with Chart.js visualizations (Bar/Donut/Line), query result polling, markdown-formatted responses. Aviation cockpit dark theme.
