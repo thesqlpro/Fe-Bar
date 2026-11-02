@@ -16,7 +16,7 @@ Last refreshed: 2026-10-22.
 - Stratified 5-fold CV: logreg ROC-AUC 0.597, PR-AUC 0.054, top-decile capture 22.4% (2.24x). GBT 0.578 / 15.5%. Prior-history rule 0.533 / 12.1%. Seed robustness for logreg: AUC 0.59-0.64, capture 17-22%
 - Back-test on the 59 events of Jun-Aug 2026: 14 caught by the 164-component top decile, $330K exposure caught, $198K avoided at 60% intervention success (~$791K/year), AOG-risk events 54 -> 46
 - Output: `ml_component_failure_forecast` (1,640 rows)
-- Leakage finding: the earlier `ml_part_failure_predictions` model (AUC 0.999) used `health_index` as a feature while its label `failure_risk_category` is a `health_index` threshold (LOW >= 70). It is kept only for the existing `part_failure_metrics` view and is not cited.
+- Leakage finding: the earlier `ml_part_failure_predictions` model (AUC 0.999) used `health_index` as a feature while its label `failure_risk_category` is a `health_index` threshold (LOW >= 70). The table is now marked RETIRED in its comment and nothing reads it. `part_failure_metrics` was repointed to `ml_component_failure_forecast` on 2026-11-02 (`ALTER VIEW`, grants kept). Check: MEASURE() returns 1,640 components, 164 proactive-visit, 164 top-decile, 58 back-test events, $10.16M expected exposure.
 
 ## Unity Catalog access controls (`governance/uc_access_controls.sql`)
 - Row filter `airline_row_filter` on `gold_customer_operations` and `ml_component_failure_forecast`. Verified: the platform owner sees 10 of 10 operators and 1,640 of 1,640 forecast rows. Under the entitlement map, the `operator_skywest_global` group resolves to SkyWest Global only
@@ -49,11 +49,15 @@ Last refreshed: 2026-10-22.
 
 ## Gold Metric Views
 - fleet_operations_metrics (8 dims, 9 measures), aircraft_health_metrics (4 dims, 9 measures), anomaly_analysis_metrics (5 dims, 8 measures), built over the operator gold tables (row counts above)
-- component_health_metrics (1,640), part_failure_metrics (1,640), maintenance_anomaly_metrics (969), built over the Parker gold tables
+- component_health_metrics (1,640, on gold_component_health), part_failure_metrics (1,640, on ml_component_failure_forecast), maintenance_anomaly_metrics (969, on gold_maintenance_anomalies). Validated by the last cell of `notebooks/Gold_Layer_Metric_Views`
 
 ## Lakebase
 - Instance: aircraft-maintenance-lakebase (CU_1, AVAILABLE)
-- 5 synced tables ONLINE:
+- Parker synced tables ONLINE (created 2026-11-02, counts match source):
+  - gold_component_health_synced (1,640)
+  - gold_maintenance_compliance_synced (50)
+  - Not synced on purpose: ml_component_failure_forecast and gold_customer_operations. They have UC row filters / a column mask, and the sync API rejects them ("cannot have both row/column security and online materialized views"), so they are served from UC with governance intact
+- Operator telemetry synced tables ONLINE (feed the airline dashboard pages):
   - ml_maintenance_predictions_synced (320)
   - gold_flight_summary_synced (1,384)
   - gold_aircraft_health_synced (320)
