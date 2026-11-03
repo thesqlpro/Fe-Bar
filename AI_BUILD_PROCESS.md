@@ -6,7 +6,7 @@ This document captures how AI tools were used throughout the build process, whic
 
 **Project**: Parker Hannifin Aerospace Component Predictive Maintenance Platform  
 **Builder**: Ayman El-Ghazali  
-**AI Tools**: Databricks Assistant (Genie Code), GitHub Copilot  
+**AI Tools**: Databricks Assistant (Genie Code)  
 **Duration**: ~2 weeks (design through deployment)
 
 ---
@@ -84,7 +84,7 @@ AI designed the Flask app architecture:
 | ML Engineering | Databricks Assistant | Feature selection, model comparison, prediction output design |
 | Governance | Databricks Assistant | Table/column comments, tag strategy, metric view YAML |
 | App Development | Databricks Assistant | Flask app scaffolding, Genie integration, permission setup |
-| Documentation | Databricks Assistant + GitHub Copilot | README, execution evidence, this document |
+| Documentation | Databricks Assistant | README, execution evidence, this document |
 
 ## Round 2: Responding to Review Feedback
 
