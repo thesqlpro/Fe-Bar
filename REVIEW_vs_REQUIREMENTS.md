@@ -9,7 +9,7 @@ Customer problem: Parker Aerospace (a Tier-1 aerospace component OEM) carries wa
 | Stage | What exists | Live check (2026-11-09) |
 | --- | --- | --- |
 | Raw data | Synthetic installed base (`notebooks/Aircraft_Data_Simulator.ipynb`) and operator flight telemetry | 328 aircraft, 1,640 components, 9,839 service records, 10 operators. 1.38M telemetry rows |
-| Lakeflow | Operator telemetry: SDP pipeline `5bd5dac4` (`pipeline/`). Parker: SDP code in `pipeline_parker/` | Operator pipeline last update COMPLETED. **The Parker tables are managed tables written by notebooks, not pipeline output** (see section 5) |
+| Lakeflow | Operator telemetry: SDP pipeline `5bd5dac4` (`pipeline/`). Parker: SDP pipeline `ffb2c906` (`pipeline_parker/`) | Both pipelines' latest updates COMPLETED. The 10 Parker medallion tables are materialized views owned by `ffb2c906` (update `524e3e3b`). Fixed 2026-11-09, see section 5 |
 | Unity Catalog | `governance/uc_access_controls.sql`, `notebooks/UC_Governance.ipynb` | Row filter `airline_row_filter` on 2 tables, column mask `financial_mask` on `expected_warranty_exposure_usd`, 5-row `operator_entitlements` table |
 | Lakebase | Instance `aircraft-maintenance-lakebase`, 7 synced tables | AVAILABLE. Parker: `gold_component_health_synced` 1,640, `gold_maintenance_compliance_synced` 50 (both match source) |
 | ML | Point-in-time next-quarter forecast (`notebooks/Parker_Component_Failure_Forecast.ipynb`), MLflow run `6b20bf8b32c84774807ed160317fa799` | 1,640 rows, 164 top-decile / proactive-visit, $10.16M expected exposure. Back-test: 59 events on 58 components, of which 14 events on 13 components fell in the top decile |
@@ -56,7 +56,7 @@ Customer problem: Parker Aerospace (a Tier-1 aerospace component OEM) carries wa
 | ML or Gen AI | Met | Leakage-free forecast with back-test, plus Vector Search |
 | Genie Agent | Met | Both Parker benchmarks re-run live on 2026-11-09 and passed (164 and 18). Logged in `evidence/execution_log.md` |
 | Databricks App | Met | Running, with dashboard, Genie and manual search |
-| Integrated, not siloed | Mostly met | Weakest link is the Parker ingestion step |
+| Integrated, not siloed | Met (fixed 2026-11-09) | Parker data now flows Lakeflow -> UC -> forecast / metric views / Lakebase -> Genie, dashboard and app |
 | **Execution evidence readable as text** | Met (fixed 2026-11-09) | `evidence/execution_log.md` is the captured output of a read-only script (`evidence/generate_execution_log.py`) run against the live workspace, plus two live Genie answers with their SQL. Re-running the script reproduces every table row. Notebook outputs are still not committed, because that needs a workspace admin setting |
 | Public, readable GitHub repo | Met | `private: false`. Files readable without signing in |
 | No real customer data | Met (fixed 2026-11-09) | All records are synthetic. The 5 real MRO company names were replaced with fictional ones in the simulator code and the live tables |
@@ -70,7 +70,7 @@ Expected ratings (judgement, not a guarantee):
 | --- | --- | --- | --- |
 | Industry | Exceeds | Exceeds | Unchanged |
 | Customer Skills | Exceeds | Exceeds | Unchanged, if the deck is attached as PDF |
-| Product | Meets | Meets, possibly Exceeds | Serving layer reconciled as asked. No level-up extensions built. The Lakeflow finding could pull it down if noticed |
+| Product | Meets | Meets, possibly Exceeds | Serving layer reconciled as asked. No level-up extensions built. The Lakeflow gap found in this review is now closed |
 | Build + AI Mindset | Below | Meets | The blocking must-have is now covered in three places |
 
 ## 5. Status of the risks found in this review (updated 2026-11-09)
@@ -79,11 +79,11 @@ Expected ratings (judgement, not a guarantee):
 | --- | --- | --- |
 | 1 | No committed execution output | Fixed: `evidence/execution_log.md` and its generating script |
 | 2 | Deck not exported | Fixed: `deck/Parker_Aerospace_Value_Deck.md`, plus a PDF in the UC volume |
-| 3 | Parker data never went through Lakeflow | **Open.** Being rebuilt as a runnable pipeline (see below). README now states which pipeline ran |
+| 3 | Parker data never went through Lakeflow | Fixed: pipeline `ffb2c906` (update `524e3e3b`, COMPLETED) now owns all 10 Parker medallion tables as materialized views. Each matches its notebook-built predecessor (0 differing rows). Downstream re-verified |
 | 4 | `execution_evidence.md` out of date | Fixed: refresh date, 7-page dashboard, live Genie results, MRO rename, link to the raw log |
 | 5 | Real MRO company names | Fixed: renamed in code and in 3 tables (7,025 / 7,025 / 673 rows). Totals unchanged |
 
-On item 3: `pipeline_parker/` as committed cannot run. `bronze_ingestion` defines `bronze_aircraft_registry` twice, uses an undefined `SOURCE_SCHEMA`, and includes operator telemetry tables. `silver_enrichment` reads `bronze_parker_aircraft_registry`, which the pipeline does not define. `gold_aggregations` has dangling code after a "DEAD CODE REMOVED" comment and alias views that would collide with the operator pipeline's gold tables.
+On item 3: `pipeline_parker/` was rewritten before deployment. Operator telemetry tables and legacy alias views were removed, the expectations were kept, and `gold_customer_operations` declares `ROW FILTER airline_row_filter ON (airline)`. The pipeline reads frozen simulator output from `genie_zeroops_mfg_catalog.parker_source`. The operator pipeline `5bd5dac4` was not touched.
 
 ## 6. Original risk list (as found 2026-11-09, before fixes)
 

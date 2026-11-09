@@ -8,7 +8,7 @@ Last refreshed: 2026-11-09. This file is a summary. The raw run output (row coun
 - 1,640 Parker components, 328 aircraft (`bronze_parker_aircraft_registry`), 10 operator customers, 9,839 service records (Mar 2025 to Aug 2026)
 - 9.8% of service events anomalous, ~37 days average detection latency, $8.5M modelled warranty exposure, 280 components CRITICAL by health index
 - Gold: `gold_component_health` (1,640), `gold_maintenance_compliance` (50), `gold_maintenance_anomalies` (969), `gold_customer_operations` (10)
-- MRO shop names are fictional (Rhineland Aero Technik, EuroAtlantic MRO, Harbor Point Aero Services, Coastal Component Repair, Pinecrest Aviation Services, Parker Direct Service, Third-Party Unlisted). Real MRO company names used in an earlier simulator version were replaced on 2026-11-09 in the code and in `bronze_maintenance_records`, `silver_enriched_maintenance` (7,025 rows each) and `gold_maintenance_anomalies` (673 rows). Totals unchanged
+- MRO shop names are fictional (Rhineland Aero Technik, EuroAtlantic MRO, Harbor Point Aero Services, Coastal Component Repair, Pinecrest Aviation Services, Parker Direct Service, Third-Party Unlisted). Real MRO company names used in an earlier simulator version were replaced on 2026-11-09 in the code and in the data (7,025 maintenance records, 673 anomalies). Totals unchanged. The frozen simulator output that the Parker pipeline reads (`genie_zeroops_mfg_catalog.parker_source`) carries only the fictional names
 - Realism profile (last cell of the simulator): HIGH/CRITICAL anomalies carry 100% warranty risk and ~80% high delay risk. Detection latency by type ranges from 12 days (premature wear) to 62 days (false compliance flag). Overdue vs on-time anomaly rate is 9.2% vs 10.0%, so there is no uplift (known limitation).
 
 ## Component failure forecast
@@ -29,9 +29,18 @@ Last refreshed: 2026-11-09. This file is a summary. The raw run output (row coun
 - 1,379,010 telemetry rows, 1,380 flights, 328 aircraft, 10 airlines
 - Anomaly rate by operator ranges from 3.3% (Summit Aviation) to 20.9% (SkyWest Global), rising Jul-Oct 2026 for SkyWest and Atlas Pacific
 
-## Lakeflow Pipeline
-- Operator flight-telemetry pipeline "Aircraft Maintenance Medallion Pipeline" (code in `pipeline/`). Last three updates COMPLETED on 2026-10-21 (update IDs in `evidence/execution_log.md`)
-- Parker installed-base medallion: the bronze/silver/gold tables above were written by the simulator and build notebooks. See the Parker pipeline status in the README
+## Lakeflow Pipelines
+
+### Parker Installed-Base Medallion Pipeline
+- Pipeline ID `ffb2c906-9499-4368-9468-42470e6048b7`, serverless, publishes to `genie_zeroops_mfg_catalog.default`. Code: `pipeline_parker/bronze/bronze_ingestion`, `pipeline_parker/silver/silver_enrichment`, `pipeline_parker/gold/gold_aggregations` (run straight from this Git folder)
+- Source: frozen simulator output in `genie_zeroops_mfg_catalog.parker_source`. That schema also keeps reference copies of the earlier notebook-built silver/gold tables
+- Successful update `524e3e3b-4d76-43e6-aea5-0de210e2d3a3` (COMPLETED, 2026-11-09 20:37 UTC). An earlier update, `4c52f614-4c03-44e6-9881-e02a976d5dbb`, also completed; the silver column order was fixed after it. Dry runs `be7dedf1` and `5dead128` passed
+- 10 materialized views owned by the pipeline, with expectations: bronze_customer_registry (10), bronze_parker_aircraft_registry (328), bronze_components_registry (1,640), bronze_maintenance_records (9,839), bronze_component_telemetry (1,640), silver_enriched_maintenance (9,839), gold_component_health (1,640), gold_maintenance_compliance (50), gold_maintenance_anomalies (969), gold_customer_operations (10, `ROW FILTER airline_row_filter ON (airline)` declared in the pipeline)
+- Each table matches the notebook-built table it replaced: same schema, same row count, 0 differing rows
+- Downstream re-verified after the switch: Lakebase synced tables recreated and ONLINE (1,640 / 50), metric views 1,640 components / 969 anomalies / 164 proactive-visit, `ml_component_failure_forecast` unchanged (1,640 rows, 164 top decile), quality tags and app service-principal SELECT re-applied on all 10, Genie test returned 1,640 / 969 (conversation `01f1dc7e264d1feebb1b02c9b2de55ad`), the 4 Parker dashboard datasets query OK
+
+### Aircraft Maintenance Medallion Pipeline (operator flight telemetry)
+- Code in `pipeline/`. Last three updates COMPLETED on 2026-10-21 (update IDs in `evidence/execution_log.md`). Not changed by the Parker work
 - Pipeline ID: `5bd5dac4-6cae-4af6-960d-056a266e7143`
 - 10 datasets materialized:
   - bronze_raw_telemetry (1.38M rows)
@@ -56,7 +65,7 @@ Last refreshed: 2026-11-09. This file is a summary. The raw run output (row coun
 
 ## Lakebase
 - Instance: aircraft-maintenance-lakebase (CU_1, AVAILABLE)
-- Parker synced tables ONLINE (created 2026-11-02, counts match source):
+- Parker synced tables ONLINE (recreated 2026-11-09 on the pipeline-owned gold views, counts match source):
   - gold_component_health_synced (1,640)
   - gold_maintenance_compliance_synced (50)
   - Not synced on purpose: ml_component_failure_forecast and gold_customer_operations. They have UC row filters / a column mask, and the sync API rejects them ("cannot have both row/column security and online materialized views"), so they are served from UC with governance intact

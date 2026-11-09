@@ -22,8 +22,11 @@ Run at 2026-11-09 19:04 UTC as `ayman.el-ghazali@databricks.com`
 
 ## 2. Lakeflow pipeline runs
 
+Added 2026-11-09 after the run above: the 10 tables in section 1 (all except `ml_component_failure_forecast`) are now materialized views owned by the Parker pipeline below. Their row counts are unchanged from section 1, re-checked live. An earlier Parker update, `4c52f614-4c03-44e6-9881-e02a976d5dbb`, also completed; the silver column order was fixed after it. Re-running `generate_execution_log.py` lists the Parker pipeline automatically.
+
 | pipeline | pipeline_id | update_id | state | created (UTC) |
 | --- | --- | --- | --- | --- |
+| Parker Installed-Base Medallion Pipeline | ffb2c906-9499-4368-9468-42470e6048b7 | 524e3e3b-4d76-43e6-aea5-0de210e2d3a3 | COMPLETED | 2026-11-09 20:37:54 |
 | Aircraft Maintenance Medallion Pipeline | 5bd5dac4-6cae-4af6-960d-056a266e7143 | e6e62197-7758-4651-84d0-23c0f90e9abd | COMPLETED | 2026-10-21 20:11:26 |
 | Aircraft Maintenance Medallion Pipeline | 5bd5dac4-6cae-4af6-960d-056a266e7143 | a13ea315-8531-4328-adad-93a8453836bb | COMPLETED | 2026-10-21 20:03:28 |
 | Aircraft Maintenance Medallion Pipeline | 5bd5dac4-6cae-4af6-960d-056a266e7143 | f28329ca-69ae-4055-b211-3a2f1240b08c | COMPLETED | 2026-10-21 19:50:05 |
