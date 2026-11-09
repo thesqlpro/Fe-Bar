@@ -93,6 +93,8 @@ Spark Declarative Pipeline: Bronze (4 tables) → Silver (2 tables) → Gold (4 
 
 Parker installed-base transformations (`pipeline_parker/`): `silver_enriched_maintenance` (compliance score, overdue days, warranty-risk flag, with expectations) -> `gold_component_health`, `gold_maintenance_compliance`, `gold_maintenance_anomalies`, `gold_customer_operations`.
 
+**Parker pipeline status (2026-11-09).** The pipeline that has run end to end is the operator flight-telemetry pipeline above (update IDs in `evidence/execution_log.md`). The Parker bronze, silver and gold tables that the forecast, metric views, Lakebase, Genie and app read today were written by the simulator and build notebooks with the same logic. They are managed tables, not pipeline output. `pipeline_parker/` is the Lakeflow version of that logic, and it is being made runnable and deployed as its own pipeline.
+
 ### 3. ML
 **Component failure forecast (`notebooks/Parker_Component_Failure_Forecast.ipynb`), the model behind the business case**
 - Question: which Parker components will have a HIGH/CRITICAL service event or warranty-risk event next quarter?

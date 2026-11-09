@@ -2,12 +2,13 @@
 
 All components built and executed on Databricks workspace `fevm-genie-zeroops-mfg.cloud.databricks.com`.
 
-Last refreshed: 2026-10-22.
+Last refreshed: 2026-11-09. This file is a summary. The raw run output (row counts, pipeline update IDs, governance objects, MLflow metrics, Lakebase sync states, a vector-search result, app/dashboard status and two live Genie answers) is in [`evidence/execution_log.md`](evidence/execution_log.md), produced by the read-only script `evidence/generate_execution_log.py`.
 
 ## Parker installed base (synthetic)
 - 1,640 Parker components, 328 aircraft (`bronze_parker_aircraft_registry`), 10 operator customers, 9,839 service records (Mar 2025 to Aug 2026)
 - 9.8% of service events anomalous, ~37 days average detection latency, $8.5M modelled warranty exposure, 280 components CRITICAL by health index
 - Gold: `gold_component_health` (1,640), `gold_maintenance_compliance` (50), `gold_maintenance_anomalies` (969), `gold_customer_operations` (10)
+- MRO shop names are fictional (Rhineland Aero Technik, EuroAtlantic MRO, Harbor Point Aero Services, Coastal Component Repair, Pinecrest Aviation Services, Parker Direct Service, Third-Party Unlisted). Real MRO company names used in an earlier simulator version were replaced on 2026-11-09 in the code and in `bronze_maintenance_records`, `silver_enriched_maintenance` (7,025 rows each) and `gold_maintenance_anomalies` (673 rows). Totals unchanged
 - Realism profile (last cell of the simulator): HIGH/CRITICAL anomalies carry 100% warranty risk and ~80% high delay risk. Detection latency by type ranges from 12 days (premature wear) to 62 days (false compliance flag). Overdue vs on-time anomaly rate is 9.2% vs 10.0%, so there is no uplift (known limitation).
 
 ## Component failure forecast
@@ -29,6 +30,8 @@ Last refreshed: 2026-10-22.
 - Anomaly rate by operator ranges from 3.3% (Summit Aviation) to 20.9% (SkyWest Global), rising Jul-Oct 2026 for SkyWest and Atlas Pacific
 
 ## Lakeflow Pipeline
+- Operator flight-telemetry pipeline "Aircraft Maintenance Medallion Pipeline" (code in `pipeline/`). Last three updates COMPLETED on 2026-10-21 (update IDs in `evidence/execution_log.md`)
+- Parker installed-base medallion: the bronze/silver/gold tables above were written by the simulator and build notebooks. See the Parker pipeline status in the README
 - Pipeline ID: `5bd5dac4-6cae-4af6-960d-056a266e7143`
 - 10 datasets materialized:
   - bronze_raw_telemetry (1.38M rows)
@@ -70,11 +73,14 @@ Last refreshed: 2026-10-22.
 
 ## Genie Agent
 - Space: Aircraft Maintenance Intelligence (ID: 01f1a5f87b0b17719e85516055a09440)
-- Tested (original run): "How many aircraft are CRITICAL risk?" -> 10 (correct at the time of that run; the reprocessed `ml_maintenance_predictions` now holds 23 CRITICAL aircraft)
+- Parker benchmarks, re-run live 2026-11-09 (SQL and answers in `evidence/execution_log.md`):
+  - "Which components need a proactive field-service visit next quarter?" -> 164 components across 10 airlines (expected 164, pass)
+  - "How many Atlas Pacific actuators are in the top forecast risk decile?" -> 18 (expected 18, pass)
+- Operator question (original run): "How many aircraft are CRITICAL risk?" -> 10 at the time; the reprocessed `ml_maintenance_predictions` now holds 23 CRITICAL aircraft
 
 ## AI/BI Dashboard
 - Dashboard ID: 01f1a5f8872c151b939582bfede572d6
-- 4 pages, 5 datasets on Lakebase synced tables, published
+- Published 2026-10-29 with embedded credentials. 7 pages: Parker Installed Base (first page, on the Parker metric views), Fleet Operations, Flight Phase Analysis, Aircraft Health & Maintenance, Global Filters, Anomaly Analysis, Airline Operations (operator pages on Lakebase synced tables)
 
 ## Databricks App
 - URL: https://aircraft-maintenance-app-7474652206075893.aws.databricksapps.com

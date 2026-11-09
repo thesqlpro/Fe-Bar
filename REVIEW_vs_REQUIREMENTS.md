@@ -54,14 +54,14 @@ Customer problem: Parker Aerospace (a Tier-1 aerospace component OEM) carries wa
 | Unity Catalog governance | Met | Row filter, column mask, entitlement table, tags, owners, lineage |
 | Lakebase operational serving | Met | 7 synced tables, all sync pipelines' latest update COMPLETED. Parker counts match source |
 | ML or Gen AI | Met | Leakage-free forecast with back-test, plus Vector Search |
-| Genie Agent | Met | Parker benchmarks passed on 2026-10-29. The pass is not logged in `execution_evidence.md` |
+| Genie Agent | Met | Both Parker benchmarks re-run live on 2026-11-09 and passed (164 and 18). Logged in `evidence/execution_log.md` |
 | Databricks App | Met | Running, with dashboard, Genie and manual search |
 | Integrated, not siloed | Mostly met | Weakest link is the Parker ingestion step |
-| **Execution evidence readable as text** | **At risk** | 0 of 67 code cells in the 9 committed notebooks have outputs. Evidence rests on `execution_evidence.md` (a written summary) and markdown result cells. The brief says source code alone will not pass the Build domain |
+| **Execution evidence readable as text** | Met (fixed 2026-11-09) | `evidence/execution_log.md` is the captured output of a read-only script (`evidence/generate_execution_log.py`) run against the live workspace, plus two live Genie answers with their SQL. Re-running the script reproduces every table row. Notebook outputs are still not committed, because that needs a workspace admin setting |
 | Public, readable GitHub repo | Met | `private: false`. Files readable without signing in |
-| No real customer data | Met, one judgement risk | All records are synthetic, but 5 real MRO companies are named in the simulator and get synthetic anomalies and false-compliance flags |
+| No real customer data | Met (fixed 2026-11-09) | All records are synthetic. The 5 real MRO company names were replaced with fictional ones in the simulator code and the live tables |
 | Deck: business outcome, buyer KPIs, sponsor and domain owner | Met | Reviewer: Customer Skills **Exceeds** |
-| **Deck attached as PDF / .txt / .md** | **Not ready** | Only the `.pptx` exists |
+| Deck attached as PDF / .txt / .md | Ready (fixed 2026-11-09) | `deck/Parker_Aerospace_Value_Deck.md` (every slide's text and tables). PDF: `/Volumes/genie_zeroops_mfg_catalog/default/maintenance_manuals/submission/Parker_Aerospace_Value_Deck.pdf` |
 | Conversation ID (optional) | Present | `execution_evidence.md`: thread `617974576538052` |
 
 Expected ratings (judgement, not a guarantee):
@@ -73,10 +73,22 @@ Expected ratings (judgement, not a guarantee):
 | Product | Meets | Meets, possibly Exceeds | Serving layer reconciled as asked. No level-up extensions built. The Lakeflow finding could pull it down if noticed |
 | Build + AI Mindset | Below | Meets | The blocking must-have is now covered in three places |
 
-## 5. Open risks, in priority order
+## 5. Status of the risks found in this review (updated 2026-11-09)
+
+| # | Risk | Status |
+| --- | --- | --- |
+| 1 | No committed execution output | Fixed: `evidence/execution_log.md` and its generating script |
+| 2 | Deck not exported | Fixed: `deck/Parker_Aerospace_Value_Deck.md`, plus a PDF in the UC volume |
+| 3 | Parker data never went through Lakeflow | **Open.** Being rebuilt as a runnable pipeline (see below). README now states which pipeline ran |
+| 4 | `execution_evidence.md` out of date | Fixed: refresh date, 7-page dashboard, live Genie results, MRO rename, link to the raw log |
+| 5 | Real MRO company names | Fixed: renamed in code and in 3 tables (7,025 / 7,025 / 673 rows). Totals unchanged |
+
+On item 3: `pipeline_parker/` as committed cannot run. `bronze_ingestion` defines `bronze_aircraft_registry` twice, uses an undefined `SOURCE_SCHEMA`, and includes operator telemetry tables. `silver_enrichment` reads `bronze_parker_aircraft_registry`, which the pipeline does not define. `gold_aggregations` has dangling code after a "DEAD CODE REMOVED" comment and alias views that would collide with the operator pipeline's gold tables.
+
+## 6. Original risk list (as found 2026-11-09, before fixes)
 
 1. **Notebook outputs not committed.** This is the most likely way to fail the Build domain. Fix: commit outputs for the forecast, governance, metric-view, simulator and manuals notebooks (Git folders can include outputs on commit), or add raw query and run output to the repo as text.
 2. **Deck not exported.** The form needs PDF, .txt or .md. Export the 11-slide `.pptx` and attach it.
 3. **Parker data never went through Lakeflow.** All 11 Parker tables are managed tables created by notebooks (the 10 medallion tables on 2026-09-28, the forecast on 2026-10-22). `pipeline_parker/` holds SDP code but was never deployed. Fix: deploy `pipeline_parker/` as a pipeline, run it, and log its update ID and counts. Or say plainly in the README which pipeline ran and which code is reference only.
 4. **`execution_evidence.md` is partly out of date.** It says "Last refreshed 2026-10-22" and describes the dashboard as 4 pages and 5 datasets. Its only Genie test is an operator question, not the passing Parker benchmarks.
-5. **Real MRO company names** (Lufthansa Technik, Air France KLM E&M, ST Engineering, Chromalloy, Evergreen Aviation) are attached to synthetic quality failures. Safer to replace them with fictional names.
+5. **Real MRO company names** (5 real maintenance companies) are attached to synthetic quality failures. Safer to replace them with fictional names.
